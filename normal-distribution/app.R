@@ -8,7 +8,7 @@ library(shiny)
 ui <- fluidPage(
   
   # Give the page a title
-  titlePanel("Tossing Coins"),
+  titlePanel("The Normal distribution"),
   
   # Generate a row with a sidebar
   sidebarLayout(      
