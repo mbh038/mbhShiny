@@ -12,5 +12,5 @@ Thanks Gaston!
 library(shiny)
 
 # Easiest way is to use runGitHub
-runGitHub("introstat-spring-2017", "ucb-introstat", subdir = "apps/ch03-histograms")
+runGitHub("mbhShiny","mbh038",subdir="gaston")
 ```
