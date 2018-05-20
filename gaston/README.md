@@ -1,9 +1,3 @@
-# ---
-# title: "README"
-# author: "mbh"
-# date: "20/05/2018"
-# output: html_document
-# ---
 
 Example taken from Gaston Sanchez at http://www.gastonsanchez.com
 
