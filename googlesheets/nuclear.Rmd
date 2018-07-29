@@ -1,0 +1,96 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(googlesheets)
+suppressPackageStartupMessages(library("dplyr"))
+```
+
+### Authenticate
+```{r}
+gs_auth(new_user = TRUE)
+```
+
+### Which google sheets are in my account?
+```{r}
+sheets<-gs_ls()
+```
+
+
+
+### Select a spreadsheet
+
+We'll take the most recent Nuclear data spreadsheet.
+```{r}
+#get the key
+my_key=sheets %>% filter(sheet_title=="Nuclear_Data_26072018") %>% select(sheet_key)
+my_key<-my_key[1][1]
+```
+
+
+```{r}
+#read the spreadsheet into R
+#nuc <- gs_key(as.character(my_key))
+my_key='11l2Kgi2htwOBw5OamZTWPIRAEO1pQt6kydrPF_F6b3g'
+nuc <- gs_key(my_key)
+```
+
+### Let's have a look at it
+```{r}
+print(nuc)
+print(gs_ws_ls(nuc))
+```
+
+```{r}
+nuc_data <- nuc %>% gs_read(ws = "Data")
+head(nuc_data)
+```
+
+##Plots
+
+### Plot all isotopes N vs Z
+```{r}
+plot(nuc_data$Z,nuc_data$N,
+     pch=19,
+     col='red',
+     xlab='Proton number Z',
+     ylab='Neutron number N')
+abline(0,1,col='blue',lty=2)
+```
+### N-Z plot function
+
+```{r}
+plotNZ<-function(x,y,title){
+     plot(x,y,
+     pch=19,
+     col='red',
+     xlab='Proton number Z',
+     ylab='Neutron number N',
+     main=title)
+    abline(0,1,col='blue',lty=2)
+}
+```
+
+### Plot the alpha emitters
+
+```{r}
+library(colorspace)
+pal <- rainbow_hcl(4)
+alpha<-filter(nuc_data,grepl('a',decay_mode))
+beta_minus<-filter(nuc_data,grepl('b-',decay_mode))
+beta_plus<-filter(nuc_data,grepl('b+',decay_mode))
+stable<-filter(nuc_data,grepl('stable',stability))
+plot(alpha$Z,alpha$N,
+     pch=19,
+     col=pal[1],
+     xlab='Proton number Z',
+     ylab='Neutron number N',)
+#points(beta_minus$Z,beta_minus$N,col='#0000FF77')
+points(beta_minus$Z,beta_minus$N,col=pal[2])
+points(beta_plus$Z,beta_plus$N,col=pal[3])
+points(stable$Z,stable$N,col=pal[4])
+abline(0,1,col='blue',lty=2)
+#legend(c(1,2,3,4))
+```

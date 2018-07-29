@@ -4,91 +4,62 @@
 
 library(shiny)
 
-# Define UI for application that draws a histogram
+x <- seq(-10,10,0.1)
+
 ui <- fluidPage(
+  titlePanel("Normal Distribution"),
   
-  # Give the page a title
-  titlePanel("The Normal distribution"),
-  
-  # Generate a row with a sidebar
-  sidebarLayout(      
-    
-    # Define the sidebar with one input
+  sidebarLayout(
     sidebarPanel(
-      sliderInput("tosses", label = "Number of tosses:",  
-                  min = 1, max = 500, value = 100, step = 1),
-      sliderInput("chance", label = "Chance of heads", 
-                  min = 0, max = 1, value = 0.5, step= 0.05),
-      hr(),
-      helpText('Expected Value:'),
-      verbatimTextOutput("exp_value"),
-      helpText('Standard Error'),
-      verbatimTextOutput("std_error")
-    ),
+      helpText("Create demographic maps with 
+               information from the 2010 US Census."),
+      
+      sliderInput("n", 
+                  label = "Sample size:",
+                  min = 0, max = 100, value = 20,step=1),
+      
+      sliderInput("mean", 
+                  label = "Mean:",
+                  min = -10, max = 10, value = 0,step=0.1),
+      
+      sliderInput("sdev", 
+                  label = "Standard deviation:",
+                  min = 0, max = 5, value = 1,step=0.1),
+     
+      textOutput("mean"),
+      textOutput("sdev")
+      ),
     
-    # Create a spot for the barplot
     mainPanel(
-      plotOutput("chancePlot")  
+      plotOutput("ndist",width=500)
     )
   )
-)
+  )
 
-
-# Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  # Expected Value
-  output$exp_value <- renderPrint({ 
-    input$tosses * input$chance
+  output$selected_var <- renderText({ 
+    paste("You have selected", input$var)
   })
   
-  # Standard Error
-  output$std_error <- renderPrint({ 
-    sqrt(input$tosses * input$chance * (1 - input$chance))
+  output$mean <- renderText({ 
+    paste("Mean: ",
+          input$mean)
   })
   
-  # Fill in the spot we created for a plot
-  output$chancePlot <- renderPlot({
-    probs <- 100 * dbinom(0:input$tosses, 
-                          size = input$tosses, 
-                          prob = input$chance)
-    
-    exp_value <- input$tosses * input$chance
-    std_error <- sqrt(input$tosses * input$chance * (1 - input$chance))
-    
-    below3se <- (exp_value - 3 * std_error)
-    above3se <- (exp_value + 3 * std_error)
-    
-    from <- floor(below3se) + 1
-    to <- ceiling(above3se) + 1
-    
-    if (input$tosses >= 10 & from > 0) {
-      xpos <- barplot(probs[from:to], plot = FALSE)
-      # Render probability histogram as a barplot
-      op = par(mar = c(6.5, 4.5, 4, 2))
-      barplot(probs[from:to], axes = FALSE, col = "gray70", 
-              names.arg = (from-1):(to-1), border = NA,
-              ylim = c(0, ceiling(max(probs))),
-              ylab = "probability (%)", 
-              main = sprintf("Probability Histogram\n %s Tosses", 
-                             input$tosses))
-      axis(side = 2, las = 1)
-      axis(side = 1, line = 3,
-           at = seq(xpos[1], xpos[length(xpos)], length.out = 7),
-           labels = seq(-3, 3, 1))
-      mtext("Standard Units", side = 1, line = 5.5)
-      par(op)
-    } else {
-      barplot(probs, axes = FALSE, col = "gray70", 
-              names.arg = 0:input$tosses, border = NA,
-              ylim = c(0, ceiling(max(probs))),
-              ylab = "probability (%)", 
-              main = sprintf("Probability Histogram\n %s Tosses", 
-                             input$tosses))
-      axis(side = 2, las = 1)
-    }
+    output$sdev <- renderText({ 
+    paste("Standard deviation: ",
+          input$sdev)
   })
+    
+    output$ndist <- renderPlot({ 
+      y1 <- dnorm(x,mean=input$mean,sd=input$sdev)
+      ymax <- dnorm(0,mean=input$mean,sd=input$sdev)
+      hist(rnorm(n=input$n,mean=input$mean,sd=input$sdev),freq=FALSE,main="",ylim=c(0,ymax))
+      lines(x,y1,type="l",col="blue",lwd=2)
+
+    })
+  
 }
 
-# Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui, server)
